@@ -1,4 +1,8 @@
-const { getReportsByUser, getReportById } = require("../services/reportService");
+const {
+  getReportsByUser,
+  getReportById,
+  getRiskDistribution
+} = require("../services/reportService");
 
 const listReports = async (req, res, next) => {
   try {
@@ -21,4 +25,13 @@ const fetchReport = async (req, res, next) => {
   }
 };
 
-module.exports = { listReports, fetchReport };
+const reportDistribution = async (req, res, next) => {
+  try {
+    const distribution = await getRiskDistribution();
+    res.json({ distribution });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { listReports, fetchReport, reportDistribution };

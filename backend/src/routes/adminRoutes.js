@@ -1,18 +1,40 @@
 const express = require("express");
 const {
-  listDiseases,
-  createDisease,
-  updateDisease,
-  deleteDisease
+  addWaterPollution,
+  listWaterPollution,
+  addGovernmentContact,
+  listGovernmentContacts,
+  listUsers,
+  listAllReports
 } = require("../controllers/adminController");
 const { requireAuth, requireAdmin } = require("../middleware/authMiddleware");
-const { diseaseValidators, handleValidation } = require("../utils/validators");
+const {
+  waterPollutionValidators,
+  governmentContactValidators,
+  handleValidation
+} = require("../utils/validators");
 
 const router = express.Router();
 
-router.get("/diseases", requireAuth, requireAdmin, listDiseases);
-router.post("/diseases", requireAuth, requireAdmin, diseaseValidators, handleValidation, createDisease);
-router.put("/diseases/:id", requireAuth, requireAdmin, diseaseValidators, handleValidation, updateDisease);
-router.delete("/diseases/:id", requireAuth, requireAdmin, deleteDisease);
+router.get("/water-pollution", requireAuth, requireAdmin, listWaterPollution);
+router.post(
+  "/water-pollution",
+  requireAuth,
+  requireAdmin,
+  waterPollutionValidators,
+  handleValidation,
+  addWaterPollution
+);
+router.get("/government-contacts", requireAuth, requireAdmin, listGovernmentContacts);
+router.post(
+  "/government-contacts",
+  requireAuth,
+  requireAdmin,
+  governmentContactValidators,
+  handleValidation,
+  addGovernmentContact
+);
+router.get("/users", requireAuth, requireAdmin, listUsers);
+router.get("/reports", requireAuth, requireAdmin, listAllReports);
 
 module.exports = router;

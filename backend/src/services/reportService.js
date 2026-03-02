@@ -1,21 +1,40 @@
-const Report = require("../models/Report");
+const HealthReport = require("../models/HealthReport");
 
-const createReport = async ({ userId, personalInfo, waterInfo, symptoms, result }) => {
-  const report = await Report.create({
-    user: userId,
-    personalInfo,
-    waterInfo,
+const createReport = async ({
+  userId,
+  symptoms,
+  riskLevel,
+  state,
+  latitude,
+  longitude,
+  nearestHospitals
+}) =>
+  HealthReport.create({
+    user_id: userId,
     symptoms,
-    result
+    risk_level: riskLevel,
+    state,
+    latitude,
+    longitude,
+    nearest_hospitals: nearestHospitals,
+    date: new Date()
   });
 
-  return report;
-};
-
 const getReportsByUser = async (userId) =>
-  Report.find({ user: userId }).sort({ createdAt: -1 });
+  HealthReport.find({ user_id: userId }).sort({ date: -1 });
 
 const getReportById = async (reportId, userId) =>
-  Report.findOne({ _id: reportId, user: userId });
+  HealthReport.findOne({ _id: reportId, user_id: userId });
 
-module.exports = { createReport, getReportsByUser, getReportById };
+const getRiskDistribution = async () =>
+  HealthReport.aggregate([
+    { $group: { _id: "$risk_level", count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+  ]);
+
+module.exports = {
+  createReport,
+  getReportsByUser,
+  getReportById,
+  getRiskDistribution
+};

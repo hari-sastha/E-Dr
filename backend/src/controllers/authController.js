@@ -10,26 +10,61 @@ const createJwt = (userId) =>
 const firebaseLogin = async (req, res, next) => {
   try {
     const { idToken } = req.body;
-    // Verify Firebase ID token and create a short-lived JWT for API sessions.
     const decoded = await admin.auth().verifyIdToken(idToken);
 
     const { uid, name, email, phone_number: phone, picture } = decoded;
+    const existingUser = await User.findOne({ firebaseUid: uid });
 
     const user = await User.findOneAndUpdate(
       { firebaseUid: uid },
       {
-        firebaseUid: uid,
-        name: name || "",
-        email: email || "",
-        phone: phone || "",
-        photo: picture || ""
+        $set: {
+          name: name || existingUser?.name || "",
+          email: email || existingUser?.email || "",
+          phone: phone || existingUser?.phone || "",
+          photo: picture || existingUser?.photo || ""
+        },
+        $setOnInsert: {
+          firebaseUid: uid,
+          profileCompleted: false
+        }
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     ).select("-__v");
 
     const token = createJwt(user._id);
 
-    res.json({ token, user });
+    res.json({
+      token,
+      user,
+      isNewUser: !existingUser,
+      needsProfileCompletion: !user.profileCompleted
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const completeProfile = async (req, res, next) => {
+  try {
+    const { name, age, gender, bloodGroup, phone, state, district } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        name,
+        age,
+        gender,
+        bloodGroup,
+        phone,
+        state,
+        district,
+        profileCompleted: true
+      },
+      { new: true }
+    ).select("-__v");
+
+    res.json({ user });
   } catch (error) {
     next(error);
   }
@@ -39,4 +74,4 @@ const getMe = async (req, res) => {
   res.json({ user: req.user });
 };
 
-module.exports = { firebaseLogin, getMe };
+module.exports = { firebaseLogin, getMe, completeProfile };

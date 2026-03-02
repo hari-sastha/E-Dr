@@ -6,7 +6,9 @@ const privateKey = process.env.FIREBASE_PRIVATE_KEY
   ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
   : undefined;
 
-if (!admin.apps.length) {
+const firebaseConfigured = Boolean(projectId && clientEmail && privateKey);
+
+if (firebaseConfigured && !admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId,
@@ -16,4 +18,18 @@ if (!admin.apps.length) {
   });
 }
 
-module.exports = admin;
+if (!firebaseConfigured) {
+  module.exports = {
+    auth: () => ({
+      verifyIdToken: async () => {
+        const error = new Error(
+          "Firebase Admin is not configured. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY."
+        );
+        error.statusCode = 500;
+        throw error;
+      }
+    })
+  };
+} else {
+  module.exports = admin;
+}

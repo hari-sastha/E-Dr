@@ -9,7 +9,11 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      await loginWithGoogle();
+      const data = await loginWithGoogle();
+      if (data?.needsProfileCompletion) {
+        navigate("/biodata");
+        return;
+      }
       navigate("/app/dashboard");
     } catch (err) {
       setError("Google login failed.");

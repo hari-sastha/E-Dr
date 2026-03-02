@@ -1,49 +1,88 @@
-const Disease = require("../models/Disease");
+const User = require("../models/User");
+const HealthReport = require("../models/HealthReport");
+const WaterPollution = require("../models/WaterPollution");
+const GovernmentContact = require("../models/GovernmentContact");
+const { notifyGovernmentOnDanger } = require("../services/alertService");
 
-const listDiseases = async (req, res, next) => {
+const addWaterPollution = async (req, res, next) => {
   try {
-    const diseases = await Disease.find().sort({ name: 1 });
-    res.json({ diseases });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const createDisease = async (req, res, next) => {
-  try {
-    const disease = await Disease.create(req.body);
-    res.status(201).json({ disease });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const updateDisease = async (req, res, next) => {
-  try {
-    const disease = await Disease.findByIdAndUpdate(req.params.id, req.body, {
-      new: true
+    const { state, pollution_level, date } = req.body;
+    const entry = await WaterPollution.create({
+      state,
+      pollution_level,
+      date: date || new Date()
     });
 
-    if (!disease) {
-      return res.status(404).json({ message: "Disease not found" });
-    }
+    await notifyGovernmentOnDanger({
+      state: entry.state,
+      pollutionLevel: entry.pollution_level,
+      date: entry.date
+    });
 
-    res.json({ disease });
+    res.status(201).json({ pollution: entry });
   } catch (error) {
     next(error);
   }
 };
 
-const deleteDisease = async (req, res, next) => {
+const listWaterPollution = async (req, res, next) => {
   try {
-    const disease = await Disease.findByIdAndDelete(req.params.id);
-    if (!disease) {
-      return res.status(404).json({ message: "Disease not found" });
-    }
-    res.json({ message: "Disease removed" });
+    const pollution = await WaterPollution.find().sort({ date: -1 }).limit(200);
+    res.json({ pollution });
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { listDiseases, createDisease, updateDisease, deleteDisease };
+const addGovernmentContact = async (req, res, next) => {
+  try {
+    const { state, official_email } = req.body;
+    const contact = await GovernmentContact.findOneAndUpdate(
+      { state },
+      { state, official_email },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    res.status(201).json({ contact });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const listGovernmentContacts = async (req, res, next) => {
+  try {
+    const contacts = await GovernmentContact.find().sort({ state: 1 });
+    res.json({ contacts });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const listUsers = async (req, res, next) => {
+  try {
+    const users = await User.find().select("-__v").sort({ createdAt: -1 }).limit(500);
+    res.json({ users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const listAllReports = async (req, res, next) => {
+  try {
+    const reports = await HealthReport.find()
+      .populate("user_id", "name email state district")
+      .sort({ date: -1 })
+      .limit(500);
+    res.json({ reports });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  addWaterPollution,
+  listWaterPollution,
+  addGovernmentContact,
+  listGovernmentContacts,
+  listUsers,
+  listAllReports
+};

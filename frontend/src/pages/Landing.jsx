@@ -5,10 +5,10 @@ const Landing = () => (
   <div className="login-page">
     <div className="login-card">
       <div className="badge">E-Dr</div>
-      <h1>Smart Community Health Monitoring</h1>
+      <h1>Emergency Disease Response</h1>
       <p>
-        Early warning system for water-borne diseases in rural Northeast India.
-        Log in to start a health check and track reports.
+        Public health monitoring platform for early detection of waterborne disease risk,
+        pollution alerts, and rapid medical response.
       </p>
       <div className="row" style={{ justifyContent: "center" }}>
         <Link className="btn primary" to="/login">

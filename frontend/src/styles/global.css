@@ -8,6 +8,11 @@
   --amber-500: #f2a93b;
   --green-500: #2a9d5f;
   --shadow: 0 18px 40px rgba(11, 31, 58, 0.18);
+  --shadow-soft: 0 10px 24px rgba(11, 31, 58, 0.12);
+  --transition: 220ms ease;
+  --surface: #ffffff;
+  --text-primary: #0b1f3a;
+  --bg-app: radial-gradient(circle at top, #e7f1fb 0%, #f7fbff 45%, #f2f6fb 100%);
 }
 
 * {
@@ -17,9 +22,19 @@
 body {
   margin: 0;
   font-family: "Gill Sans", "Gill Sans MT", Calibri, sans-serif;
-  color: var(--blue-900);
-  background: radial-gradient(circle at top, #e7f1fb 0%, #f7fbff 45%, #f2f6fb 100%);
+  color: var(--text-primary);
+  background: var(--bg-app);
   min-height: 100vh;
+  transition: background var(--transition), color var(--transition);
+}
+
+body[data-theme="dark"] {
+  --surface: #0f1c2d;
+  --text-primary: #e8eef7;
+  --blue-200: #1d3657;
+  --blue-700: #93b7e6;
+  --bg-app: radial-gradient(circle at top, #091220 0%, #0b1524 45%, #0f1a2a 100%);
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
 h1,
@@ -54,8 +69,12 @@ a {
   padding: 1.5rem 3rem;
   background: linear-gradient(120deg, #0b1f3a 0%, #1f4f85 50%, #2a7bd1 100%);
   color: var(--white);
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 40;
   overflow: hidden;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
 }
 
 .top-bar::after {
@@ -74,6 +93,7 @@ a {
   display: flex;
   gap: 1rem;
   align-items: center;
+  animation: slideInLeft 0.5s ease;
 }
 
 .brand-mark {
@@ -104,6 +124,7 @@ a {
   gap: 1rem;
   position: relative;
   z-index: 1;
+  animation: slideInRight 0.5s ease;
 }
 
 .user-chip {
@@ -111,6 +132,14 @@ a {
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
   font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  transition: transform var(--transition), background var(--transition), border-color var(--transition);
+}
+
+.user-chip:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.45);
 }
 
 .content-shell {
@@ -124,24 +153,46 @@ a {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: var(--white);
+  background: var(--surface);
   padding: 1.5rem;
   border-radius: 18px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-soft);
   height: fit-content;
+  position: sticky;
+  top: 6.5rem;
 }
 
 .side-nav a {
   padding: 0.75rem 1rem;
   border-radius: 12px;
   background: transparent;
-  transition: 0.2s ease;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.side-nav a::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: var(--blue-500);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform var(--transition);
 }
 
 .side-nav a.active,
 .side-nav a:hover {
   background: var(--blue-200);
   color: var(--blue-700);
+}
+
+.side-nav a.active::before,
+.side-nav a:hover::before {
+  transform: scaleY(1);
 }
 
 .page {
@@ -158,9 +209,16 @@ a {
 }
 
 .card {
-  background: var(--white);
+  background: var(--surface);
   padding: 1.5rem;
   border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  border: 1px solid transparent;
+}
+
+.card:hover {
+  transform: translateY(-2px);
   box-shadow: var(--shadow);
 }
 
@@ -172,6 +230,30 @@ a {
   justify-content: space-between;
   align-items: center;
   box-shadow: var(--shadow);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.hero-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 46px rgba(11, 31, 58, 0.2);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 1rem;
+}
+
+.chart-card {
+  background: rgba(42, 123, 209, 0.08);
+  border-radius: 14px;
+  padding: 1rem;
 }
 
 .btn {
@@ -180,7 +262,7 @@ a {
   border-radius: 14px;
   cursor: pointer;
   font-weight: 600;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--transition), box-shadow var(--transition), opacity var(--transition);
 }
 
 .btn.primary {
@@ -206,7 +288,11 @@ a {
 }
 
 .btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .form {
@@ -232,6 +318,16 @@ select {
   border-radius: 10px;
   border: 1px solid #d6e1ef;
   font-size: 0.95rem;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(42, 123, 209, 0.16);
 }
 
 .checkbox-grid {
@@ -265,6 +361,17 @@ select {
   padding: 1rem;
   background: #f4f8fd;
   border-radius: 14px;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.report-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-soft);
+  background: #eaf2fb;
+}
+
+.danger-outline {
+  border: 1px solid rgba(214, 53, 53, 0.45);
 }
 
 .report-title {
@@ -331,6 +438,7 @@ select {
   text-align: center;
   position: relative;
   overflow: hidden;
+  animation: popIn 0.45s ease;
 }
 
 .login-card::before {
@@ -405,9 +513,43 @@ select {
   }
 }
 
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @media (max-width: 960px) {
   .content-shell {
     grid-template-columns: 1fr;
+    padding: 1rem 1rem 2rem;
   }
 
   .top-bar {
@@ -420,5 +562,46 @@ select {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .side-nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .side-nav a {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    padding: 1rem;
+  }
+
+  .brand-title {
+    font-size: 1rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .top-actions {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .card,
+  .hero-card {
+    padding: 1rem;
   }
 }

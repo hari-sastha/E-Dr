@@ -1,9 +1,15 @@
 const express = require("express");
-const { diseaseTrends } = require("../controllers/analyticsController");
-const { requireAuth, requireAdmin } = require("../middleware/authMiddleware");
+const {
+	pollutionOverview,
+	dashboardSummary,
+	riskTrends
+} = require("../controllers/analyticsController");
+const { requireAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/trends", requireAuth, requireAdmin, diseaseTrends);
+router.get("/dashboard", requireAuth, dashboardSummary);
+router.get("/pollution-overview", requireAuth, pollutionOverview);
+router.get("/risk-trends", requireAuth, riskTrends);
 
 module.exports = router;
